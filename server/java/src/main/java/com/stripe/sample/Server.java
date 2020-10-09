@@ -25,24 +25,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class Server {
     private static Gson gson = new Gson();
 
-    static class CreateCheckoutSessionRequest {
-        @SerializedName("priceId")
-        String priceId;
-
-        public String getPriceId() {
-            return priceId;
-        }
-    }
-
-    static class CreateCustomerPortalSessionRequest {
-        @SerializedName("customerId")
-        String customerId;
-
-        public String getCustomerId() {
-            return customerId;
-        }
-    }
-
     public static void main(String[] args) {
         port(4242);
 
@@ -90,23 +72,23 @@ public class Server {
             // ?session_id={CHECKOUT_SESSION_ID} means the redirect will have the session ID
             // set as a query param
             SessionCreateParams params = new SessionCreateParams.Builder()
-                .setSuccessUrl(domainUrl + "/success.html?session_id={CHECKOUT_SESSION_ID}")
-                .setCancelUrl(domainUrl + "/canceled.html")
-                .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
-                .addLineItem(new SessionCreateParams.LineItem.Builder()
-                  .setQuantity(1L)
-                  .setPrice(req.getPriceId())
-                  .build()
-                )
-                .build();
+                    .setSuccessUrl(domainUrl + "/success.html?session_id={CHECKOUT_SESSION_ID}")
+                    .setCancelUrl(domainUrl + "/canceled.html")
+                    .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
+                    .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+                    .addLineItem(new SessionCreateParams.LineItem.Builder()
+                            .setQuantity(1L)
+                            .setPrice(req.getPriceId())
+                            .build()
+                    )
+                    .build();
 
             try {
                 Session session = Session.create(params);
                 Map<String, Object> responseData = new HashMap<>();
                 responseData.put("sessionId", session.getId());
                 return gson.toJson(responseData);
-            } catch(Exception e) {
+            } catch (Exception e) {
                 Map<String, Object> messageData = new HashMap<>();
                 messageData.put("message", e.getMessage());
                 Map<String, Object> responseData = new HashMap<>();
@@ -122,9 +104,9 @@ public class Server {
             String domainUrl = dotenv.get("DOMAIN");
 
             com.stripe.param.billingportal.SessionCreateParams params = new com.stripe.param.billingportal.SessionCreateParams.Builder()
-                .setReturnUrl(domainUrl)
-                .setCustomer(req.getCustomerId())
-                .build();
+                    .setReturnUrl(domainUrl)
+                    .setCustomer(req.getCustomerId())
+                    .build();
             com.stripe.model.billingportal.Session session = com.stripe.model.billingportal.Session.create(params);
             Map<String, Object> responseData = new HashMap<>();
             responseData.put("url", session.getUrl());
@@ -156,5 +138,23 @@ public class Server {
                     return "";
             }
         });
+    }
+
+    static class CreateCheckoutSessionRequest {
+        @SerializedName("priceId")
+        String priceId;
+
+        public String getPriceId() {
+            return priceId;
+        }
+    }
+
+    static class CreateCustomerPortalSessionRequest {
+        @SerializedName("customerId")
+        String customerId;
+
+        public String getCustomerId() {
+            return customerId;
+        }
     }
 }
